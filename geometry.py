@@ -1,8 +1,69 @@
-# Categorizing pairs of qubits by distance
+import torch
+from torch import nn
+import numpy as np
 
-# grid of qubits
-grid = np.array(range(1, length * width + 1)).reshape((length, width))
+# pauli_qubits: list of iterable of qubits each pauli acts on
+class GridMap(nn.Module):
+    def __init__(self, shape, pauli_qubits=None, delta1=0) -> None:
+        super().__init__()
+        self.shape = shape
+        self.d = len(shape)
+        self.n = torch.prod(torch.tensor(shape))
+        self.delta1 = delta1
+        # indices of qubits on n-d grid structure (coordinate-to-qubit index)
+        self.indices = torch.arange(self.n).reshape(shape)
+        # list of all coordinates (qubit-index-to-coordinate)
+        self.coordinates = torch.from_numpy(np.array([index for index in np.ndindex(shape)]))
+        self.edges = self.get_edges()
+        self.m = len(self.edges)
+        self.pauli_qubits = self.edges if pauli_qubits is None else pauli_qubits
+        
+        self.parameter_map = [self.get_local_parameters(qubits) for qubits in self.pauli_qubits]
 
+    def forward(self, x):
+        return [x[...,params, :] for params in self.parameter_map]
+        
+    # potentially generalize to different models
+    def get_edges(self):
+        # maybe improve this, but one-time calc
+        edges = []
+        for ind1 in range(self.n):
+            for ind2 in range(ind1):
+                # adjacent, so l1 distance 1
+                if torch.abs(self.coordinates[ind1] - self.coordinates[ind2]) == 1:
+                    edges.append((ind2, ind1)) # index 1 can be larger than index 2, want lexographic order
+
+        return torch.tensor(edges)
+    
+    # Given two qubits q1, q2 (1-indexed integers) in length x width grid
+    # Output l1 distance between q1 and q2 in grid
+    def distance(self, q1, q2):
+        return torch.abs(self.coordinates[q1] - self.coordinates[q2])
+    
+    def get_nearby_qubits(self, q, delta1):
+        return torch.argwhere((self.coordinates - self.coordinates[q].repeat(self.n,1)).norm(dim=1) < delta1)
+
+    # qubits: iterable of integers
+    # returns indices of all parameters (parameters are edges) for a tensor with qubit indices
+    def get_local_parameters(self, qubits):
+        local_qubits = []
+        for qubit in qubits:
+            local_qubits.append(self.get_nearby_qubits(qubit, self.delta1))
+
+        local_qubits = torch.tensor(local_qubits).flatten().unique()
+
+        local_parameters = []
+        for qubit in local_qubits:
+            local_parameters.append(torch.argwhere(self.edges[:,0] == torch.ones((self.m,)) * qubit))
+            local_parameters.append(torch.argwhere(self.edges[:,1] == torch.ones((self.m,)) * qubit))
+
+        return torch.tensor(local_parameters).flatten().unique()
+
+        
+
+length = 0
+width = 0
+grid = 0
 # generate all edges in grid in same order as Xfull
 all_edges = []
 for i in range(0, length):
@@ -90,4 +151,13 @@ def get_local_region_params(q1, q2, delta1, data, i):
     indices = [all_edges.index(edge) for edge in edges]
     
     return np.array([data[i][j] for j in sorted(indices)])
-    
+
+
+# TESTING
+
+def main():
+    grid = Grid((5,5))
+    grid.get_edges()
+
+if __name__ == "__main__":
+    main()
