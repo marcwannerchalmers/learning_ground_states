@@ -2,8 +2,16 @@ import torch
 from torch import nn
 import numpy as np
 
+class LocalLayer(nn.Module):
+    def __init__(self, parameter_map) -> None:
+        super().__init__()
+        self.parameter_map = parameter_map
+    
+    def forward(self, x):
+        return [x[...,params, :] for params in self.parameter_map]
+
 # pauli_qubits: list of iterable of qubits each pauli acts on
-class GridMap(nn.Module):
+class GridMap:
     def __init__(self, shape, pauli_qubits=None, delta1=0) -> None:
         super().__init__()
         self.shape = shape
@@ -20,8 +28,8 @@ class GridMap(nn.Module):
         
         self.parameter_map = [self.get_local_parameters(qubits) for qubits in self.pauli_qubits]
 
-    def forward(self, x):
-        return [x[...,params, :] for params in self.parameter_map]
+    def get_layer(self):
+        return LocalLayer(self.parameter_map)
         
     # potentially generalize to different models
     def get_edges(self):
@@ -59,7 +67,6 @@ class GridMap(nn.Module):
 
         return torch.tensor(local_parameters).flatten().unique()
 
-        
 
 length = 0
 width = 0
