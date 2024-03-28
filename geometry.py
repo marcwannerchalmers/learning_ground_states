@@ -163,7 +163,7 @@ def get_local_region_params(q1, q2, delta1, data, i):
 # TESTING
 
 def main():
-    grid = Grid((5,5))
+    grid = GridMap((5,5))
     grid.get_edges()
 
 if __name__ == "__main__":

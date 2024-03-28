@@ -9,6 +9,8 @@ from fastai.vision.all import *
 from functools import partial
 from model import SimpleFullDNN
 
+from data import get_train_test_set
+
 # torch.multiprocessing.set_sharing_strategy("file_system")
 
 def init_learner(cfg: OmegaConf, test: bool = False) -> fastai.learner.Learner:
@@ -33,9 +35,7 @@ def init_learner(cfg: OmegaConf, test: bool = False) -> fastai.learner.Learner:
         **cfg.optim_parameters
     )
     
-    mse_loss = torch.nn.MSELoss(reduction="mean")
-    metric_fn = torch.nn.MSELoss(reduction="sum")
-    metrics = [mean_sum, relative_abs, fft_mean_sum]
+    loss_fn = torch.nn.MSELoss(reduction="mean")
     callbacks = [
         SaveModelCallback(fname=cfg.lognames.best_model_file, with_opt=True, reset_on_fit=False),
         ReduceLROnPlateau(patience=cfg.learner_parameters.lr_reduce_epochs, factor=2, reset_on_fit=False),
@@ -45,8 +45,8 @@ def init_learner(cfg: OmegaConf, test: bool = False) -> fastai.learner.Learner:
                       model,
                       opt_func=opt_func,
                       loss_func=loss_fn,
-                      metrics=metrics,
-                      cbs=callbacks,
+                      metrics=loss_fn,
+                      #cbs=callbacks,
                       path=root_path,
                       model_dir=cfg.paths.model_path)
     return learner
