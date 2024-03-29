@@ -1,0 +1,11 @@
+ds_args:
+  hello: 1
+otim_parameters:
+  lr: 0.0001
+learner_parameters:
+  n_epochs_max: 30
+model_parameters:
+  local_parameters:
+    width: 10
+    depth: 2
+    act_fun: nn.Tanh

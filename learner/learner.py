@@ -7,7 +7,7 @@ from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 from fastai.vision.all import *
 from functools import partial
-from model import SimpleFullDNN
+from model.model import SimpleFullDNN
 
 from data import get_train_test_set
 
@@ -24,11 +24,13 @@ def init_learner(cfg: OmegaConf, test: bool = False) -> fastai.learner.Learner:
     data_path = cfg.paths.data_path
     device = cfg.device
     # get training/test data
-    train_loader, test_loader = get_train_test_set(cfg.paths.data_path, **cfg.loader_parameters)
+    train_loader, test_loader = get_train_test_set(**cfg.ds_parameters)
     train_loader.to(cfg.device)
     test_loader.to(cfg.device)
     dls = DataLoaders(train_loader, test_loader)
     model = SimpleFullDNN(**cfg.model_parameters)
+    if cfg.learner_parameters.init_xavier:
+        model.init_xavier()
     opt_func = partial(
         OptimWrapper,
         opt=torch.optim.AdamW,

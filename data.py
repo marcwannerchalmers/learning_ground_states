@@ -32,8 +32,8 @@ def get_train_test_set(path,
                        n_data,
                        split=0.5, 
                        batch_size=16,
-                       norm_x=Identity, 
-                       norm_y=Identity, 
+                       norm_x="id", 
+                       norm_y="id", 
                        tf_args_x={}, 
                        tf_args_y={}):
     n_train = int(n_data * split)

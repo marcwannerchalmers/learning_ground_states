@@ -1,0 +1,27 @@
+ds_parameters:
+  path: "data_torch"
+  shape: [4,5]
+  n_data: 500
+  split: 0.5
+  batch_size: 16
+  norm_x: "id"
+  norm_y: "id"
+  # tf_args_x:
+  # tf_args_y:
+optim_parameters:
+  lr: 0.0001
+  l2_penalty: 0.0001
+learner_parameters:
+  n_epochs_max: 30
+  init_xavier: True
+  l1_penalty: 1
+model_parameters:
+  geometry_parameters:
+    shape: [4, 5]
+    pauli_qubits: null
+    delta1: 0
+  local_parameters:
+    width: 10
+    depth: 2
+    act_fun: "tanh"
+  
