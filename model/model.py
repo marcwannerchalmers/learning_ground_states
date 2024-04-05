@@ -1,11 +1,12 @@
 import torch
 from torch import nn 
-from geometry import GridMap
-from util.helper import get_activation, init_weights
+from model.geometry import GridMap
+from util.helper import get_activation, init_weights, get_n_terms
 
 
 class LocalDNN(nn.Module):
     def __init__(self, in_dim, width=10, depth=2, act_fun="tanh") -> None:
+        super().__init__()
         assert(depth >= 1)
 
         self.in_dim = in_dim
@@ -28,22 +29,26 @@ class LocalDNN(nn.Module):
 class SimpleFullDNN(nn.Module):
     def __init__(self, 
                  n_terms, 
-                 in_dim, 
                  geometry_parameters={},
                  local_parameters={}) -> None:
-        self.n_terms = n_terms
-        self.local_map = GridMap(**geometry_parameters).get_layer()
+        super().__init__()
+        
+        gm = GridMap(**geometry_parameters)
+        self.local_map = gm.get_layer()
+        self.n_terms = n_terms if isinstance(n_terms, int) else get_n_terms(n_terms, gm) 
         self.models = nn.ModuleList([LocalDNN(len(loc_ind), **local_parameters) 
                                      for loc_ind in self.local_map.parameter_map])
-        self.last_layer = nn.Linear(n_terms, 1, bias=False)
+        self.last_layer = nn.Linear(self.n_terms, 1, bias=False)
+    
 
     def forward(self, x):
         # can be sped up if necessary using vmap
         # use more efficient map in more sophisticated version
         x = self.local_map(x)
-        x = torch.stack([model(x_P) for model, x_P in zip(self.models, x)])
-        x = self.last_layer(x)
-        return x, self.last_layer.parameters()
+        x = torch.cat([model(x_P) for model, x_P in zip(self.models, x)], dim=-1)
+        x = self.last_layer(x).flatten()
+
+        return x, self.last_layer.weight
     
     def init_xavier(self):
         self.apply(init_weights)

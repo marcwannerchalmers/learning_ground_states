@@ -3,8 +3,6 @@ import torch
 from tensordict import TensorDict
 import numpy as np
 from util.data import get_energy, get_couplings
-# TODO: Generate folder with dict of minima and maxima and full input/labels
-# transform them s.t. they are between 0 and 1
 
 DATA_PER_SET = 500
 
@@ -31,9 +29,9 @@ def generate_tensor_dataset(shape, path_save):
 
 
 def main():
-    generate_tensor_dataset((4,5), path_save="data_torch")
-    # test
-    print(torch.load("data_torch/data.td")["X"][0])
+    rows = (5, 9)
+    for i in range(rows[0], rows[1]+1):
+        generate_tensor_dataset((i,5), path_save="data_torch")
 
 if __name__ == "__main__":
     main()
