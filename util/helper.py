@@ -1,6 +1,6 @@
 from torch import nn 
 import torch
-from util.transforms import Identity
+from util.transforms import Identity, UnitInterval
 from model.geometry import GridMap
 
 
@@ -21,6 +21,10 @@ def init_weights(m):
 def get_transform(tf_string: str, **tf_args):
     if tf_string=="id":
         return Identity(**tf_args)
+    elif tf_string=="unit":
+        return UnitInterval(**tf_args)
+    else:
+        raise NotImplementedError
     
 def get_n_terms(mode: str, gm: GridMap):
     if mode == "edges":

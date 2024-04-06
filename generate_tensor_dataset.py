@@ -29,7 +29,7 @@ def generate_tensor_dataset(shape, path_save):
 
 
 def main():
-    rows = (5, 9)
+    rows = (4, 9)
     for i in range(rows[0], rows[1]+1):
         generate_tensor_dataset((i,5), path_save="data_torch")
 

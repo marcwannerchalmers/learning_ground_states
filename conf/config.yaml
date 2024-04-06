@@ -4,8 +4,8 @@ ds_parameters:
   n_data: 500
   split: 0.5
   batch_size: 16
-  norm_x: "id"
-  norm_y: "id"
+  norm_x: "unit"
+  norm_y: "unit"
   device: "cpu"
   # tf_args_x:
   # tf_args_y:
@@ -15,7 +15,7 @@ optim_parameters:
 learner_parameters:
   n_epochs_max: 300
   init_xavier: True
-  l1_penalty: 1
+  l1_penalty: 0
   lr_reduce_epochs: 10
 model_parameters:
   n_terms: "edges"

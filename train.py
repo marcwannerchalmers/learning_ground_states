@@ -14,6 +14,5 @@ def train(cfg : OmegaConf) -> None:
     print(f"Found learning rate is: {lr}")
     learner.fit(cfg.learner_parameters.n_epochs_max)
 
-
 if __name__ == "__main__":
     train()
