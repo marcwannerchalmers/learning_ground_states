@@ -162,3 +162,4 @@ cython_debug/
 LearnGroundStates/
 outputs/
 data_torch/
+.DS_Store
