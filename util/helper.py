@@ -28,6 +28,6 @@ def get_transform(tf_string: str, **tf_args):
     
 def get_n_terms(mode: str, gm: GridMap):
     if mode == "edges":
-        return gm.m
+        return 3 * gm.m
     else:
         raise NotImplementedError

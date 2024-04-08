@@ -10,7 +10,7 @@ from functools import partial
 from model.model import SimpleFullDNN
 
 from data import get_train_test_set
-from learner.losses import L1Loss
+from learner.losses import L1Loss, BTLoss
 
 # torch.multiprocessing.set_sharing_strategy("file_system")
 
@@ -41,11 +41,17 @@ def init_learner(cfg: OmegaConf, test: bool = False) -> fastai.learner.Learner:
         ReduceLROnPlateau(patience=cfg.learner_parameters.lr_reduce_epochs, factor=2, reset_on_fit=False),
     ]
 
+    mse = nn.MSELoss(reduction='mean')
+    bt_mse = BTLoss(cfg.ds_parameters.norm_y, mse)
+    bt_l1 = BTLoss(cfg.ds_parameters.norm_y, loss_fn)
+
+    metrics = [mse, loss_fn, bt_mse, bt_l1]
+
     learner = Learner(dls,
                       model,
                       opt_func=opt_func,
                       loss_func=loss_fn,
-                      metrics=loss_fn,
+                      metrics=metrics,
                       #cbs=callbacks,
                       path=root_path,
                       model_dir=cfg.path_model)
