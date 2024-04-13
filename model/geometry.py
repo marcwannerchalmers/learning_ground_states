@@ -76,6 +76,8 @@ class GridMap:
         graph = Graph(edges)
         
         return graph
+    
+### LEGACY ###
 
 def lllewis234_get_local():
 

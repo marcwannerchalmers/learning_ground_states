@@ -2,7 +2,7 @@ from torch import nn
 import torch
 from util.transforms import Identity, UnitInterval
 from model.geometry import GridMap
-
+from omegaconf import OmegaConf
 
 def get_activation(activation_string: str):
     if activation_string == "tanh":
@@ -27,7 +27,15 @@ def get_transform(tf_string: str, **tf_args):
         raise NotImplementedError
     
 def get_n_terms(mode: str, gm: GridMap):
-    if mode == "edges":
-        return 3 * gm.m
+    if mode == "edges": # terms correspond to edges in lattice
+        return gm.m
     else:
         raise NotImplementedError
+    
+def update_cfg(cfg: OmegaConf, gm: GridMap):
+    if cfg.ds_parameters.y_indices == "edges": # terms correspond to edges in lattice
+        cfg.ds_parameters.y_indices = gm.edges.tolist()
+    else:
+        raise NotImplementedError
+    
+    return cfg

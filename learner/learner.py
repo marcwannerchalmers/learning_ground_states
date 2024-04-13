@@ -7,10 +7,11 @@ from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 from fastai.vision.all import *
 from functools import partial
-from model.model import SimpleFullDNN
+from model.model import SimpleFullDNN, SeparateFullDNN
 
 from data import get_train_test_set
-from learner.losses import L1Loss, BTLoss
+from learner.losses import L1Loss, BTLoss, RMSE, Metric
+from util.helper import update_cfg
 
 # torch.multiprocessing.set_sharing_strategy("file_system")
 
@@ -22,13 +23,19 @@ def init_learner(cfg: OmegaConf, test: bool = False) -> fastai.learner.Learner:
     Returns: fastai learner object
     """
     root_path = Path(__file__).parents[2]
+
+    model = SeparateFullDNN(**cfg.model_parameters)
+
+    cfg = update_cfg(cfg, model.gm)
+
     # get training/test data
     train_loader, test_loader = get_train_test_set(**cfg.ds_parameters)
 
     dls = DataLoaders(train_loader, test_loader)
-    model = SimpleFullDNN(**cfg.model_parameters)
+    
     if cfg.learner_parameters.init_xavier:
         model.init_xavier()
+
     opt_func = partial(
         OptimWrapper,
         opt=torch.optim.AdamW,
@@ -42,10 +49,13 @@ def init_learner(cfg: OmegaConf, test: bool = False) -> fastai.learner.Learner:
     ]
 
     mse = nn.MSELoss(reduction='mean')
+
+    rmse = RMSE(reduction='mean')
+    
     bt_mse = BTLoss(cfg.ds_parameters.norm_y, mse)
     bt_l1 = BTLoss(cfg.ds_parameters.norm_y, loss_fn)
 
-    metrics = [mse, loss_fn, bt_mse, bt_l1]
+    metrics = [Metric(rmse), loss_fn, Metric(bt_mse), bt_l1]
 
     learner = Learner(dls,
                       model,

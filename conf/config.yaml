@@ -2,30 +2,32 @@ ds_parameters:
   path: "data_torch" # path of dataset folder containing the folders for different lattice sizes
   shape: [4,5] # shape of the lattice
   n_data: 500 # total number of (parameter, ground state samples)
-  split: 0.5 # train-test split
+  split: 0.1 # train-test split
+  y_indices: "edges" # qubit indices the paulis act on in each term in the observable
+  shadow_size: 500 # 0 for training on exact data
   batch_size: 16 # batch-size for training algorithm
   norm_x: "unit" # transform on input: "id": Identity, "unit": projection on unit interval
-  norm_y: "unit" # transform on output, same as before
+  norm_y: "id" # transform on output, same as before
   device: "cpu" # device (i.e. cpu, cuda, etc.)
   # tf_args_x: # additional parameters in case transform takes any
   # tf_args_y:
 optim_parameters:
   lr: 0.0001 # learning rate
-  weight_decay: 0.0001 #l2-penalty
+  weight_decay: 1 #l2-penalty
 learner_parameters:
   n_epochs_max: 300 # number of training epochs
   init_xavier: True # xavier-initialization on weights
   l1_penalty: 0.1 # l1-penalty on last layer
   lr_reduce_epochs: 10 # epochs with no gain until lr is reduced
 model_parameters:
-  n_terms: "edges" # number of paulis in the observable. int or str, "edges": there are 3x as many pauli-summands as edges
+  n_terms: "edges" # number of paulis in the observable. int or str, "edges": there are as many pauli-summands as edges
   geometry_parameters:
     shape: [4, 5] # shape of the lattice
     pauli_qubits: null # list of lists, which describe what qubits each pauli acts on. If null edge-pairs on the lattice are used
     delta1: 0 # same as in paper, radius for including parameters in I_P
   local_parameters:
     width: 20 # width of "local" neural networks
-    depth: 2 # depth of "local" neural networks
+    depth: 3 # depth of "local" neural networks
     act_fun: "tanh" # currently "tanh" or "relu"
 path_model: "ml_torch/runs" # path where the best model is saved
 lognames: 

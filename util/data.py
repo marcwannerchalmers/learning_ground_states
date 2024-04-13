@@ -147,9 +147,6 @@ def get_data(nrow, ncol=5, shadow_size=50, data_name='orig', normalize=True, ver
                 classical_shadow, nrow, ncol))
             Yfull.append(get_correlation(path, nrow, ncol, id_, prefix=prefix))
             Xfull.append(get_couplings(path, nrow, ncol, id_, prefix=prefix))
-        print(f'saving Ytrain, Yfull, Xfull to {os.path.join(path,data_npz)}')
-        np.savez_compressed(data_npz_path, Ytrain=Ytrain,
-                            Yfull=Yfull, Xfull=Xfull)
 
     Ytrain = np.array(Ytrain)
     Yfull = np.array(Yfull)

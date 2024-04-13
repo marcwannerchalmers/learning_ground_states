@@ -33,9 +33,9 @@ class SimpleFullDNN(nn.Module):
                  local_parameters={}) -> None:
         super().__init__()
         
-        gm = GridMap(**geometry_parameters)
-        self.local_map = gm.get_layer()
-        self.n_terms = n_terms if isinstance(n_terms, int) else get_n_terms(n_terms, gm) 
+        self.gm = GridMap(**geometry_parameters)
+        self.local_map = self.gm.get_layer()
+        self.n_terms = n_terms if isinstance(n_terms, int) else get_n_terms(n_terms, self.gm) 
         self.models = nn.ModuleList([LocalDNN(len(loc_ind), **local_parameters) 
                                      for loc_ind in self.local_map.parameter_map])
         self.last_layer = nn.Linear(self.n_terms, 1, bias=False)
@@ -52,6 +52,21 @@ class SimpleFullDNN(nn.Module):
     
     def init_xavier(self):
         self.apply(init_weights)
+
+# this is the one consistent with the paper
+class SeparateFullDNN(SimpleFullDNN):
+    def __init__(self, n_terms, geometry_parameters={}, local_parameters={}) -> None:
+        super().__init__(n_terms, geometry_parameters, local_parameters)
+
+    def forward(self, x):
+        # can be sped up if necessary using vmap
+        # use more efficient map in more sophisticated version
+        x = self.local_map(x)
+        x = torch.cat([model(x_P) for model, x_P in zip(self.models, x)], dim=-1)
+        x = (x * self.last_layer.weight)
+
+        return x, self.last_layer.weight
+        
 
     
 

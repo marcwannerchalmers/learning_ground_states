@@ -24,3 +24,21 @@ class BTLoss(nn.Module):
         y_pred = self.tf.inverse(y_pred)
         return self.loss_fn(y_pred, y)
     
+class RMSE(nn.MSELoss):
+    def __init__(self, size_average=None, reduce=None, reduction: str = 'mean') -> None:
+        super().__init__(size_average, reduce, reduction)
+    
+    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        return torch.sqrt(super().forward(input, target))
+
+# loss that only takes the first parameter of the input tuple
+class Metric(nn.Module):
+    def __init__(self, loss_fn, ind=0) -> None:
+        super().__init__()
+        self.loss_fn = loss_fn
+        self.ind = ind
+
+    def forward(self, input, target):
+        return self.loss_fn(input[self.ind], target)
+
+    
