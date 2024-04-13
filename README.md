@@ -1,5 +1,10 @@
 # Learning Ground States
 
+Comment: The files [generate_tensor_dataset.py](generate_tensor_dataset.py), [data.py](data.py), [learner.py](learner/learner.py) and [losses.py](learner/losses.py) are currently of most interest. The files [model.py](model/model.py) and [geometry.py](model/geometry.py) may be too. \
+I have not done thorough hyperparameter tuning yet and in this low data regime, the NN model performs slightly worse so far. Furthermore, in practice, it might be viable to use more than two hidden layers in the NN. \
+Other fine-tuning methods such as layernorm and MCDropout may also be viable to test.
+It will certainly be interesting to compare the regression model to the NN in a higher data-regime (i.e. coninue the plot with $>100$ data points.)
+
 ## Setup
 Run the following commands:
 1. `python -m pip install - r requirements.txt`
