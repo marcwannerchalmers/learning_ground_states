@@ -4,6 +4,13 @@ from util.transforms import Identity, UnitInterval
 from model.geometry import GridMap
 from omegaconf import OmegaConf
 
+class Sin(nn.Module):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    def forward(self, x):
+        return torch.sin(x)
+
 def get_activation(activation_string: str):
     if activation_string == "tanh":
         return nn.Tanh()

@@ -11,7 +11,8 @@ class L1Loss(nn.Module):
 
     def forward(self, y_model, y_gt):
         y_pred, weights = y_model
-        return self.mse(y_pred, y_gt) + self.penalty*weights.abs().mean(dim=0).sum()
+        mse = self.mse(y_pred, y_gt)
+        return mse + mse * self.penalty * weights.mean()
     
 class BTLoss(nn.Module):
     def __init__(self, tf: str, loss_fn, **tf_args) -> None:
@@ -29,7 +30,8 @@ class RMSE(nn.MSELoss):
         super().__init__(size_average, reduce, reduction)
     
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        return torch.sqrt(super().forward(input, target))
+        return ((input-target)**2).mean(dim=0).sqrt().mean()
+        #return torch.sqrt(super().forward(input, target))
 
 # loss that only takes the first parameter of the input tuple
 class Metric(nn.Module):

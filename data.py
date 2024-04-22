@@ -2,6 +2,7 @@ import torch
 import os
 from torch.utils.data import Dataset, DataLoader
 from util.helper import get_transform
+import copy
 
 class Data(Dataset):
     def __init__(self, 
@@ -44,6 +45,7 @@ def get_train_test_set(path,
                        shape, 
                        n_data,
                        split=0.5, 
+                       validation_split=0.8,
                        batch_size=16,
                        y_indices=None,
                        shadow_size=0,
@@ -51,8 +53,21 @@ def get_train_test_set(path,
                        norm_y="id", 
                        device="cpu",
                        tf_args_x={}, 
-                       tf_args_y={}):
-    n_train = int(n_data * split)
+                       tf_args_y={},
+                       mode='train'):
+    
+    # only use training data for train/validation set
+    n_data_train = int(n_data * split)
+
+    if mode == 'test':
+        validation_split = 1
+
+    n_train = int(n_data_train * validation_split)
+    bs_validate = n_data_train-n_train 
+
+    if mode == 'test':
+        bs_validate = batch_size # error if is set to 0
+
     train_set = Data(path, 
                      shape, 
                      0, 
@@ -65,9 +80,21 @@ def get_train_test_set(path,
                      tf_args_x, 
                      tf_args_y)
     
+    validation_set = Data(path, 
+                     shape, 
+                     n_train, 
+                     n_data_train,
+                     y_indices,
+                     shadow_size, 
+                     norm_x, 
+                     norm_y, 
+                     device, 
+                     tf_args_x, 
+                     tf_args_y)
+    
     test_set = Data(path, 
                     shape, 
-                    n_train, 
+                    n_data_train, 
                     n_data, 
                     y_indices,
                     0, # always exact data for test
@@ -80,6 +107,8 @@ def get_train_test_set(path,
     return  DataLoader(train_set, 
                       batch_size=batch_size, 
                       shuffle=True), \
+            DataLoader(validation_set, 
+                      batch_size=bs_validate), \
             DataLoader(test_set, 
                        batch_size=batch_size)
 

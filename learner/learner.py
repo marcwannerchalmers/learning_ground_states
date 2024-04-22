@@ -7,15 +7,16 @@ from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 from fastai.vision.all import *
 from functools import partial
-from model.model import SimpleFullDNN, SeparateFullDNN
+from model.model import SimpleFullDNN, CombinedFullDNN
 
 from data import get_train_test_set
 from learner.losses import L1Loss, BTLoss, RMSE, Metric
 from util.helper import update_cfg
+from learner.callbacks import FastAIPruningCallback
 
 # torch.multiprocessing.set_sharing_strategy("file_system")
 
-def init_learner(cfg: OmegaConf, test: bool = False) -> fastai.learner.Learner:
+def init_learner(cfg: OmegaConf, test: bool = False, trial=None) -> fastai.learner.Learner:
     """Initialize a fastai learner object for the multi multiplet model. The learner object is used to train the model. The function returns the learner object. The function also saves the learner object in the log folder.
     Args:
         cfg: configuration object
@@ -24,14 +25,15 @@ def init_learner(cfg: OmegaConf, test: bool = False) -> fastai.learner.Learner:
     """
     root_path = Path(__file__).parents[2]
 
-    model = SeparateFullDNN(**cfg.model_parameters)
-
+    model = CombinedFullDNN(**cfg.model_parameters)
     cfg = update_cfg(cfg, model.gm)
 
     # get training/test data
-    train_loader, test_loader = get_train_test_set(**cfg.ds_parameters)
+    # note: can probably do more elegantly later w. train, validate, test
+    mode = 'test' if test else 'train'
+    train_loader, validation_loader, _ = get_train_test_set(**cfg.ds_parameters, mode=mode)
 
-    dls = DataLoaders(train_loader, test_loader)
+    dls = DataLoaders(train_loader, validation_loader)
     
     if cfg.learner_parameters.init_xavier:
         model.init_xavier()
@@ -44,9 +46,14 @@ def init_learner(cfg: OmegaConf, test: bool = False) -> fastai.learner.Learner:
     
     loss_fn = L1Loss(cfg.learner_parameters.l1_penalty)
     callbacks = [
-        SaveModelCallback(fname=cfg.lognames.best_model_file, with_opt=True, reset_on_fit=False),
-        ReduceLROnPlateau(patience=cfg.learner_parameters.lr_reduce_epochs, factor=2, reset_on_fit=False),
+        #SaveModelCallback(fname=cfg.lognames.best_model_file, with_opt=True, reset_on_fit=False),
     ]
+
+    if not test:
+        callbacks.append(ReduceLROnPlateau(patience=cfg.learner_parameters.lr_reduce_epochs, factor=2, reset_on_fit=False))
+
+    if trial is not None:
+        callbacks.append(partial(FastAIPruningCallback, trial=trial, monitor='exp_rmspe'))
 
     mse = nn.MSELoss(reduction='mean')
 
@@ -62,7 +69,7 @@ def init_learner(cfg: OmegaConf, test: bool = False) -> fastai.learner.Learner:
                       opt_func=opt_func,
                       loss_func=loss_fn,
                       metrics=metrics,
-                      #cbs=callbacks,
+                      cbs=callbacks,
                       path=root_path,
                       model_dir=cfg.path_model)
     return learner

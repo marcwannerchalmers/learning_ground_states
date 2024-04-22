@@ -20,7 +20,8 @@ Then, run `python train.py`.
 ## Things left to do
 
 ### Hyperparameter tuning
-Next step: Integrate hyperparameter tuning as has been done in [this blogpost](https://medium.com/@crcrpar/optuna-fastai-tabular-model-001-55777031e288).
+Next step: Integrate hyperparameter tuning as has been done in [this blogpost](https://medium.com/@crcrpar/optuna-fastai-tabular-model-001-55777031e288). \
+This [package](https://pytorch.org/tutorials/beginner/hyperparameter_tuning_tutorial.html) seems however more suited for later, since allows for parallelization accross one sinlge GPU. This will come in handy when running a job on a medium sized compute node.
 
 ### Netket Heisenberg model
 Implemented our model using the [Netket library](https://netket.readthedocs.io/en/latest/). Exact Lanczos ground state computation gets killed locally due to too much memory usage from $5 \times 5$ grid onwards. Can potentially use other approximate ground state methods they provide.

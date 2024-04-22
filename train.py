@@ -10,9 +10,10 @@ def train(cfg : OmegaConf) -> None:
     learner = init_learner(cfg)
     lr = cfg.optim_parameters.lr
 
-    lr = learner.lr_find()
-    print(f"Found learning rate is: {lr}")
+    """lr = learner.lr_find()
+    print(f"Found learning rate is: {lr}")"""
     learner.fit(cfg.learner_parameters.n_epochs_max)
+    #learner.fit_one_cycle(cfg.learner_parameters.n_epochs_max)
 
 if __name__ == "__main__":
     train()
