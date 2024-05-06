@@ -1,8 +1,12 @@
 import torch
 from torch import nn
 import numpy as np
-from netket.graph import Graph
+#from netket.graph import Graph
 
+# Wrapped mapping from parameters to lattice in class
+# Slightly adapted version of code by lllewis
+
+# object we use in the deep learning model
 class LocalLayer(nn.Module):
     def __init__(self, parameter_map) -> None:
         super().__init__()
@@ -69,13 +73,13 @@ class GridMap:
 
         return torch.cat(local_parameters).flatten().unique()
     
-    def get_graph(self, all_unique_colors=True):
+"""    def get_graph(self, all_unique_colors=True):
         edges = self.edges.tolist()
         if all_unique_colors:
             edges = [(edge[0], edge[1], i) for i, edge in enumerate(edges)]
         graph = Graph(edges)
         
-        return graph
+        return graph"""
     
 ### LEGACY ###
 

@@ -6,6 +6,8 @@ from util.data import get_energy, get_couplings, get_data
 
 DATA_PER_SET = 500
 
+# store the old data in more convenient format
+
 def generate_tensor_dataset(shape, path_save, shadow_sizes=[500]):
     data_dict = {}
     for size in shadow_sizes:

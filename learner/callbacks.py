@@ -1,5 +1,5 @@
 from fastai.vision.all import *
-import optuna
+#import optuna
 
 class FastAIPruningCallback(TrackerCallback):
     def __init__(self, learn, trial, monitor):

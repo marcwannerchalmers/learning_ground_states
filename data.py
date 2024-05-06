@@ -4,6 +4,8 @@ from torch.utils.data import Dataset, DataLoader
 from util.helper import get_transform
 import copy
 
+# dataset object
+# shadow_size=0 <--> exact correlations
 class Data(Dataset):
     def __init__(self, 
                  path, 
@@ -40,7 +42,8 @@ class Data(Dataset):
     
     def __getitem__(self, index):
         return self.X[index], self.Y[index]
-    
+
+# returns dataloader objects for training, validation and test set
 def get_train_test_set(path, 
                        shape, 
                        n_data,

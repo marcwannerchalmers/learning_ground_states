@@ -9,7 +9,7 @@ ds_parameters:
   batch_size: 16 # batch-size for training algorithm
   norm_x: "unit" # transform on input: "id": Identity, "unit": projection on unit interval
   norm_y: "id" # transform on output, same as before
-  device: "mps:0" # device (i.e. cpu, cuda, etc.)
+  device: "cuda:0" # device (i.e. cpu, cuda, etc.)
   # tf_args_x: # additional parameters in case transform takes any
   # tf_args_y:
 optim_parameters:

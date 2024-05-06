@@ -3,6 +3,7 @@ from torch import nn
 from util.transforms import Transform
 from util.helper import get_transform
 
+# mean squared error plus L1 loss
 class L1Loss(nn.Module):
     def __init__(self, penalty) -> None:
         super().__init__()
@@ -13,7 +14,9 @@ class L1Loss(nn.Module):
         y_pred, weights = y_model
         mse = self.mse(y_pred, y_gt)
         return mse + mse * self.penalty * weights.mean()
-    
+
+# transforms back in case the output of the neural network is transformed
+# tf: transformation object as defined in util/transforms.py
 class BTLoss(nn.Module):
     def __init__(self, tf: str, loss_fn, **tf_args) -> None:
         super().__init__()
@@ -24,7 +27,9 @@ class BTLoss(nn.Module):
         y = self.tf.inverse(y)
         y_pred = self.tf.inverse(y_pred)
         return self.loss_fn(y_pred, y)
-    
+
+# root mean square error
+# important: need the batch size of the test loader to be equal to the amount of test data
 class RMSE(nn.MSELoss):
     def __init__(self, size_average=None, reduce=None, reduction: str = 'mean') -> None:
         super().__init__(size_average, reduce, reduction)
@@ -33,7 +38,7 @@ class RMSE(nn.MSELoss):
         return ((input-target)**2).mean(dim=0).sqrt().mean()
         #return torch.sqrt(super().forward(input, target))
 
-# loss that only takes the first parameter of the input tuple
+# loss that only takes tone parameter of the input tuple
 class Metric(nn.Module):
     def __init__(self, loss_fn, ind=0) -> None:
         super().__init__()
