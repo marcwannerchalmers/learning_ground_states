@@ -3,6 +3,8 @@ import pandas as pd
 from parse import parse
 import matplotlib.pyplot as plt
 
+# Mostly adapted from lllewis
+
 def read_prediction_errors(filename: str) -> list:
     pat = "({:g}, {:g})"
     errors = []

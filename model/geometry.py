@@ -29,8 +29,15 @@ class GridMap:
         self.coordinates = torch.from_numpy(np.array([index for index in np.ndindex(shape)]))
         self.edges = self.get_edges()
         self.m = len(self.edges)
-        self.pauli_qubits = self.edges if pauli_qubits is None else pauli_qubits
+
+        # lexographic order of edges
+        tuple_edges = np.array([(edge[0].item(), edge[1].item()) for edge in self.edges],
+                               dtype=np.dtype([('x', int), ('y', int)]))
+        sorted_idx = np.argsort(tuple_edges, order=('x', 'y'))
+
+        self.edges = self.edges[sorted_idx]
         
+        self.pauli_qubits = self.edges if pauli_qubits is None else pauli_qubits 
         self.parameter_map = [self.get_local_parameters(qubits) for qubits in self.pauli_qubits]
 
     def get_layer(self):
@@ -181,6 +188,7 @@ def lllewis234_get_local():
 
 def main():
     grid = GridMap((5,5))
+    print(grid.edges)
     grid.get_edges()
 
 if __name__ == "__main__":
