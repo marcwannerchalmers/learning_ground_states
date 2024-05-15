@@ -29,7 +29,7 @@ function main()
     # outputlevel = 0
 
 
-    Lx = 2
+    Lx = 4
     Ly = 5
     N = Lx * Ly
     nshots = 1000
@@ -68,6 +68,7 @@ function main()
         # end
         ampo = AutoMPO()
         for (b, bond) in enumerate(lattice)
+            println(bond.s1, ", ", bond.s2, "\n")
             ampo .+= J[b], "X", bond.s1, "X", bond.s2
             ampo .+= J[b], "Y", bond.s1, "Y", bond.s2
             ampo .+= J[b], "Z", bond.s1, "Z", bond.s2

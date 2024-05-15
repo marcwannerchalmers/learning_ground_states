@@ -27,7 +27,7 @@ def init_learner(cfg: OmegaConf, test: bool = False, trial=None) -> fastai.learn
     root_path = Path(__file__).parents[2]
 
     # construct model and update geometry parameters
-    model = CombinedFullDNN(**cfg.model_parameters)
+    model = CombinedFullDNN(**cfg.model_parameters, device=cfg.ds_parameters.device)
     cfg = update_cfg(cfg, model.gm)
 
     # get training/test data

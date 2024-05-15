@@ -10,8 +10,8 @@ from model.geometry import GridMap
 from model.model import CombinedFullDNN
 
 # stores results in same format as lllewis
-def save_results(path, errors, gm: GridMap, split):
-    filename = "init_results_{}x{}_{}_rand_data.txt".format(*gm.shape, split)
+def save_results(path, errors, gm: GridMap, split, seq):
+    filename = "dl_results_{}x{}_{}_{}_data.txt".format(*gm.shape, seq, split)
     file_save = os.path.join(path, filename)
     with open(file_save, "w") as f:
         for error, edge in zip(errors, gm.edges):
@@ -50,7 +50,7 @@ def main(cfg : OmegaConf) -> None:
         for split in train_splits:
             cfg.ds_parameters.split = split
             errors, gm = evaluate(cfg)
-            save_results(cfg.path_eval, errors, gm, split)
+            save_results(cfg.path_eval, errors, gm, split, cfg.ds_parameters.seq)
     
 if __name__ == "__main__":
     main()

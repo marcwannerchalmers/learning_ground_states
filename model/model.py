@@ -63,7 +63,7 @@ class SimpleFullDNN(nn.Module):
 # used to predict several observables in parallel
 # [N.o. parameters] --> [N.o. observables]
 class CombinedFullDNN(nn.Module):
-    def __init__(self, n_terms, geometry_parameters={}, local_parameters={}) -> None:
+    def __init__(self, n_terms, geometry_parameters={}, local_parameters={}, device="cpu") -> None:
         super().__init__()
         self.geometry_parameters = geometry_parameters
         self.local_parameters = local_parameters
@@ -77,7 +77,7 @@ class CombinedFullDNN(nn.Module):
         self.f_model = f_model
        
         #self.f_model = lambda params, buffers, x: functional_call(base_model, (params, buffers), (x,))                                     
-        self.models = nn.ModuleList([SimpleFullDNN(n_terms, geometry_parameters, local_parameters) for _ in range(self.n_terms)]).to(torch.device("mps:0"))
+        self.models = nn.ModuleList([SimpleFullDNN(n_terms, geometry_parameters, local_parameters) for _ in range(self.n_terms)]).to(torch.device(device))
         self.params, self.buffs = stack_module_state(self.models)
         # seems a bit hacky, but works
         self._parameters = self.params

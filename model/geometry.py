@@ -31,7 +31,7 @@ class GridMap:
         self.m = len(self.edges)
 
         # lexographic order of edges
-        tuple_edges = np.array([(edge[0].item(), edge[1].item()) for edge in self.edges],
+        tuple_edges = np.array([(edge[0].item(), -(edge[1].item())) for edge in self.edges],
                                dtype=np.dtype([('x', int), ('y', int)]))
         sorted_idx = np.argsort(tuple_edges, order=('x', 'y'))
 
@@ -39,6 +39,7 @@ class GridMap:
         
         self.pauli_qubits = self.edges if pauli_qubits is None else pauli_qubits 
         self.parameter_map = [self.get_local_parameters(qubits) for qubits in self.pauli_qubits]
+        # print(self.parameter_map)
 
     def get_layer(self):
         return LocalLayer(self.parameter_map)
@@ -69,11 +70,13 @@ class GridMap:
         local_qubits = []
         for qubit in qubits:
             local_qubits.append(self.get_nearby_qubits(qubit, self.delta1))
-        local_qubits = torch.tensor(local_qubits).flatten().unique()
+        local_qubits = torch.cat(local_qubits).flatten().unique()
+        # print(local_qubits)
 
         local_parameters = []
         for qubit in local_qubits:
             for j in range(2):
+                # get edges connected to that qubit
                 loc_param = torch.argwhere(self.edges[:,j] == torch.ones((self.m,)) * qubit)
                 if len(loc_param) > 0:
                     local_parameters.append(loc_param.flatten())
@@ -92,8 +95,8 @@ class GridMap:
 
 def lllewis234_get_local():
 
-    length = 0
-    width = 0
+    length = 4
+    width = 5
     grid = 0
     # generate all edges in grid in same order as Xfull
     all_edges = []
@@ -187,7 +190,7 @@ def lllewis234_get_local():
 # TESTING
 
 def main():
-    grid = GridMap((5,5))
+    grid = GridMap((5,5), delta1=1)
     print(grid.edges)
     grid.get_edges()
 

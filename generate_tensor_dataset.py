@@ -39,8 +39,13 @@ def generate_tensor_dataset_new(shape, path_save, prefix):
         fname = os.path.join(path, "{}_{}x{}_id{}_XX.txt".format('simulation', *shape, id))
         if not os.path.exists(fname):
             continue
-        data_dict["X"].append(get_couplings(path, shape[0], shape[1], id, prefix='simulation'))
-        data_dict["Y"].append(get_correlation(path, shape[0], shape[1], id, prefix='simulation'))
+        X = get_couplings(path, shape[0], shape[1], id, prefix='simulation')
+        Y = get_correlation(path, shape[0], shape[1], id, prefix='simulation')
+        if np.isnan(Y).any():
+            print("Nan")
+            continue
+        data_dict["X"].append(X)
+        data_dict["Y"].append(Y)
         length += 1
 
     for key, item in data_dict.items():
@@ -63,7 +68,7 @@ def main():
     shadow_sizes = [50, 100, 250, 500, 1000]
     for i in range(rows[0], rows[1]+1):
         #generate_tensor_dataset((i,5), path_save="data_torch", shadow_sizes=shadow_sizes)
-        #generate_tensor_dataset_new((i,5), path_save="data_torch", prefix='lds')
+        generate_tensor_dataset_new((i,5), path_save="data_torch", prefix='lds')
         generate_tensor_dataset_new((i,5), path_save="data_torch", prefix='rand')
 
 if __name__ == "__main__":
