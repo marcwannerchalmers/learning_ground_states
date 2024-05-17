@@ -52,6 +52,7 @@ class SimpleFullDNN(nn.Module):
         x = torch.cat([model(x_P) for model, x_P in zip(self.models, x)], dim=-1)
         x = self.last_layer(x).flatten()
 
+        # ones_like because of potential batching
         return torch.stack((x, torch.ones_like(x) * self.last_layer.weight.abs().sum()))
     
     def init_xavier(self):

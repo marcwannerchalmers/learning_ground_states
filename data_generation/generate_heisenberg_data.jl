@@ -43,7 +43,6 @@ function main()
     minsweeps = 5
     basepath = "data_test/"
 
-
     groundstate = nothing
     for k in ProgressBar(start_id:(start_id+npoints-1))
         Random.seed!(k * 1234 + N)

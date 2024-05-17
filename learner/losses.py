@@ -12,7 +12,7 @@ class L1Loss(nn.Module):
     def forward(self, y_model, y_gt):
         y_pred, weights = y_model
         mse = self.mse(y_pred, y_gt)
-        return mse + mse * self.penalty * weights.mean()
+        return mse + self.penalty * weights.mean()
     
 class BTLoss(nn.Module):
     def __init__(self, tf: str, loss_fn, **tf_args) -> None:
