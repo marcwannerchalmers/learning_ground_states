@@ -12,6 +12,8 @@ from jax.experimental.sparse.linalg import lobpcg_standard
 import jax.numpy as jnp
 import sys
 
+# THIS ATTEMPT IS DISCONTINUED
+
 def get_heisenberg_operator(shape: tuple, x: list):
     graph = GridMap(shape).get_graph()
     hi = Spin(s=0.5, N=graph.n_nodes)

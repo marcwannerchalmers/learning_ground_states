@@ -5,7 +5,7 @@ from util.helper import get_activation, init_weights, get_n_terms
 from torch.func import stack_module_state, functional_call
 import copy
 
-
+# standard fully connected deep network: [d_input] --> float
 class LocalDNN(nn.Module):
     def __init__(self, in_dim, width=10, depth=2, act_fun="tanh", dropout=0.0) -> None:
         super().__init__()
@@ -23,13 +23,15 @@ class LocalDNN(nn.Module):
             self.layers.append(self.act_fun)
             self.layers.append(nn.Linear(width, width))
             self.layers.append(nn.Dropout1d(dropout))
+            # self.layers.append(nn.LayerNorm((width)))
         self.layers.append(nn.Linear(width, 1))
 
         self.model = nn.Sequential(*self.layers)
 
     def forward(self, x):
         return self.model(x)
-    
+
+# model according to paper: [N.o. parameters] --> float
 class SimpleFullDNN(nn.Module):
     def __init__(self, 
                  n_terms, 
@@ -59,11 +61,11 @@ class SimpleFullDNN(nn.Module):
         self.apply(init_weights)
 
 
-
-
-# this is the one consistent with the paper
+# Stacked SimpleFullDNNs using torch.vmap
+# used to predict several observables in parallel
+# [N.o. parameters] --> [N.o. observables]
 class CombinedFullDNN(nn.Module):
-    def __init__(self, n_terms, geometry_parameters={}, local_parameters={}) -> None:
+    def __init__(self, n_terms, geometry_parameters={}, local_parameters={}, device="cpu") -> None:
         super().__init__()
         self.geometry_parameters = geometry_parameters
         self.local_parameters = local_parameters
@@ -77,8 +79,9 @@ class CombinedFullDNN(nn.Module):
         self.f_model = f_model
        
         #self.f_model = lambda params, buffers, x: functional_call(base_model, (params, buffers), (x,))                                     
-        self.models = nn.ModuleList([SimpleFullDNN(n_terms, geometry_parameters, local_parameters) for _ in range(self.n_terms)]).to(torch.device("mps:0"))
+        self.models = nn.ModuleList([SimpleFullDNN(n_terms, geometry_parameters, local_parameters) for _ in range(self.n_terms)]).to(torch.device(device))
         self.params, self.buffs = stack_module_state(self.models)
+        # seems a bit hacky, but works
         self._parameters = self.params
         """self.params = nn.ParameterDict(params)
         self.register_buffer('buffs', buffs, persistent=False)"""
