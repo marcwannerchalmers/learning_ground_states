@@ -66,7 +66,8 @@ def get_train_test_set(path,
                        mode='train'):
     
     # in case not enough data in set
-    data_prelim: TensorDict = torch.load(os.path.join(path, "{}x{}.td".format(*shape)))
+    fname = "{}x{}.td".format(*shape) if seq is None else "{}_{}x{}.td".format(seq, *shape)
+    data_prelim: TensorDict = torch.load(os.path.join(path, fname))
     
     if "N_data" in data_prelim.keys():
         n_data = min(n_data, data_prelim["N_data"])

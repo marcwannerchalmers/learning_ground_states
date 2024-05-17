@@ -60,14 +60,20 @@ function main()
     npoints = parsed_args["npoints"]
     start_id = parsed_args["start_id"]
     @printf("Lx=%i, Ly=%i ", Lx, Ly)
-    Λ = 1e-10
-    noise = 1e-7
-    χ = [10, 10, 20, 20, 50, 100, 200, 200, 500, 1000, 1500]
+    Λ = 1e-8
+    noise = [1e-6, 1e-6, 1e-7, 1e-7, 1e-7, 1e-7, 1e-7, 1e-7, 1e-7, 1e-7, 1e-7, 1e-7, 1e-8, 1e-8, 1e-8, 1e-9]
+    χ = [10, 10, 20, 20, 50, 100, 200, 200, 500, 500, 1000, 1000, 1500, 1500, 2000]
+    if Lx < 7
+        χ = [10, 10, 20, 20, 50, 100, 200, 200, 500, 500, 1000, 1000, 1500]
+    end
+    if Lx == 6
+        χ = [10, 10, 20, 20, 50, 100, 200, 200, 500, 500, 1000, 1000, 1500, 2000, 2500]
+    end
     χ₀ = 10
     ϵ = 1e-4
     nsweeps = 500
     minsweeps = 5
-    basepath = "learning_ground_states/final_data/unif_nonlocal/"
+    basepath = "learning_ground_states/final_data/data_nonlocal/"
     path_j = "learning_ground_states/new_data/data_9x5/simulation_9x5_id1_couplings.txt"
 
 
@@ -115,11 +121,11 @@ function main()
         sweeps = Sweeps(nsweeps)
         maxdim!(sweeps, χ...)
         cutoff!(sweeps, Λ)
-        noise!(sweeps, noise)
+        noise!(sweeps, noise...)
         @printf("Running dmrg for %i x %i grid\n", Lx, Ly)
         observer =gpu(DMRGObserver(["Z"], sites, energy_tol=ϵ, minsweeps=minsweeps))
         try
-            @time E, ψ = dmrg(H, ψ₀, sweeps; observer=observer, outputlevel=1)
+            @time E, ψ = dmrg(H, ψ₀, sweeps; observer=observer, outputlevel=1, eigsolve_krylovdim=3)
 
             #CUDA.allowscalar(true)
             ψ = LinearAlgebra.normalize(ψ)

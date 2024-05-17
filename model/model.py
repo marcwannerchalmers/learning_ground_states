@@ -23,6 +23,7 @@ class LocalDNN(nn.Module):
             self.layers.append(self.act_fun)
             self.layers.append(nn.Linear(width, width))
             self.layers.append(nn.Dropout1d(dropout))
+            # self.layers.append(nn.LayerNorm((width)))
         self.layers.append(nn.Linear(width, 1))
 
         self.model = nn.Sequential(*self.layers)
