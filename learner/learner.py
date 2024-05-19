@@ -44,7 +44,7 @@ def init_learner(cfg: OmegaConf, test: bool = False, trial=None) -> fastai.learn
     # initialize optimizer
     opt_func = partial(
         OptimWrapper,
-        opt=torch.optim.SGD,
+        opt=torch.optim.AdamW,
         **cfg.optim_parameters
     )
     

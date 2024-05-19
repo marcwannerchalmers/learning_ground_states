@@ -1,32 +1,32 @@
 ds_parameters:
   path: "data_torch" # path of dataset folder containing the folders for different lattice sizes
-  seq: null # either "lds" or "rand" or null
+  seq: "lds" # either "lds" or "rand" or null
   shape: [4, 5] # shape of the lattice
-  n_data: 500 # total number of (parameter, ground state samples)
-  split: 0.5 # train-test split
-  validation_split: 1
+  n_data: 4096 # total number of (parameter, ground state samples)
+  split: 1 # train-test split
+  validation_split: 0.5
   y_indices: "edges" # qubit indices the paulis act on in each term in the observable
-  shadow_size: 500 # 0 for training on exact data
+  shadow_size: 0 # 0 for training on exact data
   batch_size: 16 # batch-size for training algorithm
   norm_x: "unit" # transform on input: "id": Identity, "unit": projection on unit interval
   norm_y: "id" # transform on output, same as before
-  device: "cuda:0" # device (i.e. cpu, cuda, etc.)
+  device: "mps:0" # device (i.e. cpu, cuda, etc.)
   # tf_args_x: # additional parameters in case transform takes any
   # tf_args_y:
 optim_parameters:
-  lr: 0.0005 # learning rate
-  weight_decay: 1 #l2-penalty
+  lr: 0.0001 # learning rate
+  weight_decay: 0 #l2-penalty
 learner_parameters:
   n_epochs_max: 500 # number of training epochs
   init_xavier: True # xavier-initialization on weights
-  l1_penalty: 2 # l1-penalty on last layer
+  l1_penalty: 0 # l1-penalty on last layer
   lr_reduce_epochs: 5 # epochs with no gain until lr is reduced
 model_parameters:
   n_terms: "edges" # number of paulis in the observable. int or str, "edges": there are as many pauli-summands as edges
   geometry_parameters:
-    shape: [9, 5] # shape of the lattice
+    shape: [4, 5] # shape of the lattice
     pauli_qubits: null # list of lists, which describe what qubits each pauli acts on. If null edge-pairs on the lattice are used
-    delta1: 1 # same as in paper, radius for including parameters in I_P
+    delta1: 0 # same as in paper, radius for including parameters in I_P
   local_parameters:
     width: 200 # width of "local" neural networks
     depth: 4 # depth of "local" neural networks

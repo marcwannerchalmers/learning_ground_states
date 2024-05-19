@@ -39,6 +39,7 @@ class Data(Dataset):
             print("Nan")
 
         # turn Y into list of w.r.t. parameters given
+        # only choose correlations, which are adjacent
         self.Y = torch.stack([self.Y[...,ind[0], ind[1]] for ind in y_indices],
                            dim=-1)
 

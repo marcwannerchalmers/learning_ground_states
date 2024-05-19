@@ -4,7 +4,7 @@ from tensordict import TensorDict
 import numpy as np
 from util.data import get_correlation, get_couplings, get_data
 
-DATA_PER_SET = 500
+DATA_PER_SET = 4096
 
 # store the old data in more convenient format
 
@@ -67,9 +67,9 @@ def main():
     rows = (4, 9)
     shadow_sizes = [50, 100, 250, 500, 1000]
     for i in range(rows[0], rows[1]+1):
-        generate_tensor_dataset((i,5), path_save="data_torch", shadow_sizes=shadow_sizes)
-        #generate_tensor_dataset_new((i,5), path_save="data_torch", prefix='lds')
-        #generate_tensor_dataset_new((i,5), path_save="data_torch", prefix='rand')
+        #generate_tensor_dataset((i,5), path_save="data_torch", shadow_sizes=shadow_sizes)
+        generate_tensor_dataset_new((i,5), path_save="data_torch", prefix='lds')
+        generate_tensor_dataset_new((i,5), path_save="data_torch", prefix='rand')
 
 if __name__ == "__main__":
     main()
