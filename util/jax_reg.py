@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.model_selection import ShuffleSplit
 import flax.linen as nn
 import optax
+import jaxopt
 
 @jax.jit
 def mse_ridge(w, x_batched, y_batched, alpha):
@@ -63,16 +64,18 @@ def opt_fun(w, X_cv, y_cv, alphas):
     return jnp.mean(mse_ridge_cv_alphas(w, X_cv, y_cv, alphas))
 
 def lr_fit(w, X_cv, y_cv, alphas):
-    tx = optax.adamw(learning_rate=0.01)
-    opt_state = tx.init(w)
-    loss_grad_fn = jax.value_and_grad(opt_fun)
+    """tx = jaxopt.LBFGS(opt_fun)#optax.adamw(learning_rate=0.01)
+    opt_state = tx.init(w)"""
+    tx = jaxopt.LBFGS(opt_fun, maxiter=2000)
+    res = tx.run(w, X_cv=X_cv, y_cv=y_cv, alphas=alphas)
+    """loss_grad_fn = jax.value_and_grad(opt_fun)
     for i in range(10001):
         loss_val, grads = loss_grad_fn(w, X_cv, y_cv, alphas)
         updates, opt_state = tx.update(grads, opt_state, w)
         w = optax.apply_updates(w, updates)
         if i % 100 == 0:
-            print('Loss step {}: '.format(i), loss_val)
-    return w
+            print('Loss step {}: '.format(i), loss_val)"""
+    return res.params
 
 def final_fit(X_train, y_train, X_test, y_test, alpha):
     n_features = X_train.shape[1]

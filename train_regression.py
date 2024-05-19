@@ -20,6 +20,9 @@ from util.jax_reg import fit_best_alpha_jax, final_fit
 import torch
 from tensordict import TensorDict
 import flax.linen as nn
+import jax
+import time
+jax.config.update("jax_enable_x64", True)
 
 
 def parse_args(return_parser=False, default_algo='new'):
@@ -216,15 +219,20 @@ def train_and_predict(q1, q2, hp, data, omega):
     best_alpha = 0
     np.random.seed(hp.model_seed)
     for R, gamma in product(R_it, gamma_it):
+        print(R, gamma)
         # feature mapping
         Xfeature_train = get_feature_vectors(
             hp.delta1, R, X_train, omega, gamma, nrow=hp.nrow, ncol=hp.ncol)
         Xfeature_test = get_feature_vectors(
             hp.delta1, R, X_test, omega, gamma, nrow=hp.nrow, ncol=hp.ncol)
         
+        start = time.time()
         score, alpha = fit_best_alpha_jax(hp, ML_method, Xfeature_train, 
                                                     Xfeature_test, y_train, y_test, y_test_clean, 
                                                     best_cv_score, train_score, test_score)
+        end = time.time()
+        print(end-start)
+        print(score)
         
         if score > best_cv_score:
             best_cv_score = score
