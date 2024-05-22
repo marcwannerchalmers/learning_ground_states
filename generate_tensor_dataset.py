@@ -32,6 +32,8 @@ def generate_tensor_dataset_new(shape, path_save, prefix):
     data_dict = {"X": [], "Y": []}
     
     folder_seq = "unif_LDS" if prefix == "lds" else "unif_random"
+    if prefix == "nonlocal":
+        folder_seq = "unif_nonlocal"
 
     path = os.path.join("final_data", folder_seq, "data_{}x{}".format(*shape))
     length = 0
@@ -64,12 +66,13 @@ def generate_tensor_dataset_new(shape, path_save, prefix):
 
 
 def main():
-    rows = (4, 9)
+    rows = (4, 6)
     shadow_sizes = [50, 100, 250, 500, 1000]
     for i in range(rows[0], rows[1]+1):
         #generate_tensor_dataset((i,5), path_save="data_torch", shadow_sizes=shadow_sizes)
-        generate_tensor_dataset_new((i,5), path_save="data_torch", prefix='lds')
-        generate_tensor_dataset_new((i,5), path_save="data_torch", prefix='rand')
+        #generate_tensor_dataset_new((i,5), path_save="data_torch", prefix='lds')
+        #generate_tensor_dataset_new((i,5), path_save="data_torch", prefix='rand')
+        generate_tensor_dataset_new((i,5), path_save="data_torch", prefix='nonlocal')
 
 if __name__ == "__main__":
     main()

@@ -77,6 +77,13 @@ class CombinedFullDNN(nn.Module):
         def f_model(params, buffers, x):
             return functional_call(base_model, (params, buffers), (x,))
         self.f_model = f_model
+
+        # adjust number of combined DNNs for adjacent correlations
+        if geometry_parameters["mode"] == "nonlocal":
+            gp = copy.deepcopy(geometry_parameters)
+            gp["mode"] = "local"
+            self.gm = GridMap(**gp)
+            self.n_terms = self.gm.m
        
         #self.f_model = lambda params, buffers, x: functional_call(base_model, (params, buffers), (x,))                                     
         self.models = nn.ModuleList([SimpleFullDNN(n_terms, geometry_parameters, local_parameters) for _ in range(self.n_terms)]).to(torch.device(device))

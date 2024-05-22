@@ -33,9 +33,9 @@ end
 
 
 function jld_to_txt()
-    base_path = "final_data/unif_random/"
-    data_path = "../unif_random/"
-    for Lx=4:9
+    base_path = "final_data/unif_nonlocal/"
+    data_path = "../data_nonlocal/"
+    for Lx=4:6
         println(Lx)
         folder = "data_$(Lx)x5/"
         for id=1:4096

@@ -17,10 +17,11 @@ class LocalLayer(nn.Module):
 
 # pauli_qubits: list of iterable of qubits each pauli acts on
 class GridMap:
-    def __init__(self, shape, pauli_qubits=None, delta1=0) -> None:
+    def __init__(self, shape, pauli_qubits=None, delta1=0, mode="local") -> None:
         shape = tuple(shape)
         self.shape = shape
         self.d = len(shape)
+        self.mode = mode
         self.n = torch.prod(torch.tensor(shape))
         self.delta1 = delta1
         # indices of qubits on n-d grid structure (coordinate-to-qubit index)
@@ -35,17 +36,20 @@ class GridMap:
                                dtype=np.dtype([('x', int), ('y', int)]))
         sorted_idx = np.argsort(tuple_edges, order=('x', 'y'))
 
-        self.edges = self.edges[sorted_idx]
+        if mode=="local":
+            self.edges = self.edges[sorted_idx]
         
         self.pauli_qubits = self.edges if pauli_qubits is None else pauli_qubits 
         self.parameter_map = [self.get_local_parameters(qubits) for qubits in self.pauli_qubits]
-        # print(self.parameter_map)
+        print(self.parameter_map)
 
     def get_layer(self):
         return LocalLayer(self.parameter_map)
         
     # potentially generalize to different models
     def get_edges(self):
+        if self.mode=="nonlocal":
+            return torch.tensor([[ind2, ind1] for ind1 in range(self.n) for ind2 in range(ind1)])
         # maybe improve this, but one-time calc
         edges = []
         for ind1 in range(self.n):
@@ -190,7 +194,7 @@ def lllewis234_get_local():
 # TESTING
 
 def main():
-    grid = GridMap((5,5), delta1=1)
+    grid = GridMap((5,5), delta1=0, mode="nonlocal")
     print(grid.edges)
     grid.get_edges()
 

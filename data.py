@@ -39,7 +39,6 @@ class Data(Dataset):
             print("Nan")
 
         # turn Y into list of w.r.t. parameters given
-        # only choose correlations, which are adjacent
         self.Y = torch.stack([self.Y[...,ind[0], ind[1]] for ind in y_indices],
                            dim=-1)
 
@@ -67,8 +66,7 @@ def get_train_test_set(path,
                        mode='train'):
     
     # in case not enough data in set
-    fname = "{}x{}.td".format(*shape) if seq is None else "{}_{}x{}.td".format(seq, *shape)
-    data_prelim: TensorDict = torch.load(os.path.join(path, fname))
+    data_prelim: TensorDict = torch.load(os.path.join(path, "{}x{}.td".format(*shape)))
     
     if "N_data" in data_prelim.keys():
         n_data = min(n_data, data_prelim["N_data"])
@@ -106,7 +104,7 @@ def get_train_test_set(path,
                      n_train, 
                      n_data_train,
                      y_indices,
-                     0, 
+                     shadow_size, 
                      norm_x, 
                      norm_y, 
                      device, 

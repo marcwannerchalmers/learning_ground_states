@@ -5,15 +5,21 @@ from functools import reduce
 import os
 
 # not generic, but does the trick for now
-def generate_config(cfg_orig: dict, path_save, seq, shape, delta1, split):
+def generate_config(cfg_orig: dict, path_save, seq, shape, delta1, split, mode="local"):
 
     fname = "config_{}_{}x{}_delta1_{}_split_{}.yaml".format(seq, *shape, delta1, split)
     cfg_orig["ds_parameters"]["seq"] = seq
     cfg_orig["ds_parameters"]["shape"] = [shape[0], shape[1]]
     cfg_orig["model_parameters"]["geometry_parameters"]["shape"] = [shape[0], shape[1]]
     cfg_orig["model_parameters"]["geometry_parameters"]["delta1"] = delta1
+    cfg_orig["model_parameters"]["geometry_parameters"]["mode"] = mode
     cfg_orig["ds_parameters"]["split"] = split
     cfg_orig["path_eval"] = "results/dl_{}/res_{}x{}/".format(seq, *shape)
+
+    if mode == "nonlocal":
+        fname = "config_{}_{}x{}_delta1_{}_split_{}.yaml".format(mode, *shape, delta1, split)
+        cfg_orig["path_eval"] = "results/dl_{}/res_{}x{}/".format(mode, *shape)
+        cfg_orig["ds_parameters"]["seq"] = "nonlocal"
 
     file = os.path.join(path_save, fname)
     with open(file, 'w') as outfile:
@@ -32,6 +38,14 @@ def main(cfg : OmegaConf):
                 for split in splits:
                     arch = "T4" if shape[0] < 8 else "A40"
                     generate_config(base_config, "dl_{}_{}/".format(seq, arch), seq, shape, delta1, split)
+
+    for shape in shapes[:3]:
+        for split in splits:
+            arch = "A40"
+            seq = "rand"
+            mode = "nonlocal"
+            delta1 = 0
+            generate_config(base_config, "dl_{}_{}/".format(mode, arch), seq, shape, delta1, split, mode)
 
 if __name__ == "__main__":
     main()
