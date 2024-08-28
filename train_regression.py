@@ -21,8 +21,9 @@ import torch
 from tensordict import TensorDict
 import flax.linen as nn
 import jax
+from jax import numpy as jnp
 import time
-jax.config.update("jax_enable_x64", True)
+#jax.config.update("jax_enable_x64", True)
 
 
 def parse_args(return_parser=False, default_algo='new'):
@@ -247,7 +248,10 @@ def train_and_predict(q1, q2, hp, data, omega):
     Xfeature_test = get_feature_vectors(
             hp.delta1, best_R, X_test, omega, best_gamma, nrow=hp.nrow, ncol=hp.ncol)
     
-    train_score, test_score = final_fit(Xfeature_train, y_train, Xfeature_test, y_test_clean)
+    train_score, test_score = final_fit(jnp.array(Xfeature_train, dtype=jnp.float32), 
+               jnp.array(y_train, dtype=jnp.float32), 
+               jnp.array(Xfeature_test, dtype=jnp.float32),
+               jnp.array(y_test, dtype=jnp.float32))
 
     return train_score, test_score, 
 

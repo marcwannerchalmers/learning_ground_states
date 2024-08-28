@@ -40,7 +40,7 @@ def fit_best_alpha_jax(hp, ML_method, Xfeature_train, Xfeature_test,
     alphas = jnp.array([2**(-8), 2**(-7), 2**(-6), 2**(-5)])
     n_features = Xfeature_train.shape[1]
     key = random.key(0)
-    w = random.normal(key, (len(alphas), hp.num_cross_val, n_features,)) # Dummy input data
+    w = random.normal(key, (len(alphas), hp.num_cross_val, n_features,), dtype=jnp.float32) # Dummy input data
      # Initialization call
     splits = cv.split(Xfeature_train, y_train)
     X_train_cv = np.stack([Xfeature_train[train_ind] for train_ind, _ in splits])
@@ -51,7 +51,9 @@ def fit_best_alpha_jax(hp, ML_method, Xfeature_train, Xfeature_test,
     splits = cv.split(Xfeature_train, y_train)
     Y_test_cv = np.stack([y_train[test_ind] for _, test_ind in splits]) 
 
-    w = lr_fit(w, X_train_cv, Y_train_cv, alphas)
+    w = lr_fit(w, jnp.array(X_train_cv, dtype=jnp.float32), 
+               jnp.array(Y_train_cv, dtype=jnp.float32), 
+               jnp.array(alphas, dtype=jnp.float32))
     rmses = rmse_cv_alphas(w, X_test_cv, Y_test_cv, alphas)
     cv_scores = jnp.mean(rmses, axis=1)
     alpha_ind = jnp.argmax(cv_scores)
