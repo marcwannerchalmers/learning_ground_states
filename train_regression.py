@@ -19,7 +19,6 @@ from util.jax_reg import fit_best_alpha_jax, final_fit
 
 import torch
 from tensordict import TensorDict
-import flax.linen as nn
 import jax
 from jax import numpy as jnp
 import time
@@ -42,6 +41,11 @@ def parse_args(return_parser=False, default_algo='new'):
                         default=0.1,
                         choices=[0.1, 0.3, 0.5, 0.7, 0.9],
                         type=float,
+                        help="test set fraction")
+    parser.add_argument("--seq",
+                        default="lds",
+                        choices=["lds", "rand"],
+                        type=str,
                         help="test set fraction")
     parser.add_argument("--shadow-size",
                         default=50,
@@ -386,11 +390,7 @@ if __name__ == "__main__":
 
     if args.algo_type == 'orig':
         raise RuntimeError('This script is not for Original kernel methods.')
-    splits = [0.9, 0.3, 0.5, 0.7, 0.9]
-    seqs = ["lds", "rand"]
-    #splits1 = [0.01, 0.02]
 
-    for seq in seqs:
-        for split in splits:
-            args.test_size = 1-split
-            main(args, seq)
+    split = args.test_size
+    args.test_size = 1-split
+    main(args, args.seq)

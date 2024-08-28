@@ -32,7 +32,7 @@ def evaluate_all(cfg : OmegaConf) -> None:
             save_results(cfg.path_eval, errors, gm, split, cfg.ds_parameters.seq)
 
 # stores results in same format as lllewis
-def save_results_new(cfg, errors, gm: GridMap):
+def save_results_new(cfg, errors_train, errors_test, gm: GridMap):
     shape = cfg.ds_parameters.shape
     path = cfg.path_eval
     split = cfg.ds_parameters.split
@@ -41,10 +41,10 @@ def save_results_new(cfg, errors, gm: GridMap):
     filename = "dl_results_{}_{}x{}_split_{}_delta1_{}.txt".format(seq, *shape, split, delta1)
     file_save = os.path.join(path, filename)
     with open(file_save, "w") as f:
-        for error, edge in zip(errors, gm.edges):
+        for error_train, error_test, edge in zip(errors_train, errors_test, gm.edges):
             q1, q2 = edge
             print("(q1, q2) = ({}, {})".format(q1, q2), file=f)
-            print("({}, {})".format(0, error), file=f)
+            print("({}, {})".format(error_train, error_test), file=f)
 
 # compute rmses          
 def evaluate(cfg):
@@ -54,8 +54,9 @@ def evaluate(cfg):
     with learner.no_bar():
         learner.fit(cfg.learner_parameters.n_epochs_max)
     model: CombinedFullDNN = learner.model.eval()
-    _, _, test_loader = get_train_test_set(**cfg.ds_parameters, mode='test')
-    errors = torch.zeros((model.n_terms,)).to(device)
+    train_loader, _, test_loader = get_train_test_set(**cfg.ds_parameters, mode='test')
+    errors_test = torch.zeros((model.n_terms,)).to(device)
+    errors_train = torch.zeros((model.n_terms,)).to(device)
 
     with torch.no_grad():
         # here I compute the average prediction error
@@ -63,10 +64,21 @@ def evaluate(cfg):
             x, y = data
             x = x.to(device)
             y = y.to(device)
-            errors += ((model(x)[0] - y)**2).mean(dim=0) # mean is computed over batches (i.e. divide by batch size)
+            errors_test += ((model(x)[0] - y)**2).mean(dim=0) # mean is computed over batches (i.e. divide by batch size)
 
-    errors = torch.sqrt(errors / len(test_loader)) # mean is computed over number of batches (len(loader)) --> divide by N.o. batches
-    return errors, model.gm
+    errors_test = torch.sqrt(errors_test / len(test_loader)) # mean is computed over number of batches (len(loader)) --> divide by N.o. batches
+    
+    with torch.no_grad():
+        # here I compute the average prediction error
+        for data in train_loader:
+            x, y = data
+            x = x.to(device)
+            y = y.to(device)
+            errors_train += ((model(x)[0] - y)**2).mean(dim=0) # mean is computed over batches (i.e. divide by batch size)
+
+    errors_train = torch.sqrt(errors_train / len(test_loader)) # mean is computed over number of batches (len(loader)) --> divide by N.o. batches
+    
+    return errors_train, errors_test, model.gm
 
 
 @hydra.main(version_base=None, config_path="conf", config_name="config.yaml")
@@ -75,8 +87,8 @@ def main(cfg : OmegaConf) -> None:
     print("Shape: {}x{}".format(*cfg.ds_parameters.shape))
     print("Delta1: ", cfg.model_parameters.geometry_parameters.delta1)
     print("Split: ", cfg.ds_parameters.split)
-    errors, gm = evaluate(cfg)
-    save_results_new(cfg, errors, gm)
+    errors_train, errors_test, gm = evaluate(cfg)
+    save_results_new(cfg, errors_train, errors_test, gm)
             
     
 if __name__ == "__main__":

@@ -1,25 +1,12 @@
 #!/bin/bash
 
-startids=(65 329 575 842 1100 1355 1615 1860 2122 2383 2633 2890 3129 3405 3654 3917)
+seqs=("rand" "lds")
+splits=(0.1 0.3 0.5 0.7 0.9 0.9 0.9 0.9 0.9 0.9 0.9 0.9 0.9 0.9 0.9)
+Lxs=(9 9 9 9 9 9 9 9 9 9)
+delta1s=(0 0 0 0 0 0 1 2 3 4 5 0 0 0 0 0)
 
-let npoints_orig=64
-let npoints=$npoints_orig
-let offset=0
-let startid_idx=$1/3
-let offset=($1%3)*$npoints
-echo $startid_idx
-echo $offset
-let startid=${startids[$startid_idx]}+$offset
-echo $startid
+python -u train_regression.py --seq ${seqs[$1%2]} --test-size ${splits[$1%15]} --nrow ${Lxs[$1%15]} --delta1 ${delta1s[$1%15]}
 
-:'for i in $(seq 0 47);
-do
-    startid_idx=$i/$steps
-    offset=($i%$steps)*$npoints
-    declare -i startid=${startids[$startid_idx]}+$offset
-    echo $startid
-    # echo $offset
-done
-'
+
 
 

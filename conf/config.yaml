@@ -10,7 +10,7 @@ ds_parameters:
   batch_size: 16 # batch-size for training algorithm
   norm_x: "unit" # transform on input: "id": Identity, "unit": projection on unit interval
   norm_y: "id" # transform on output, same as before
-  device: "mps:0" # device (i.e. cpu, cuda, etc.)
+  device: "cuda:0" # device (i.e. cpu, cuda, etc.)
   # tf_args_x: # additional parameters in case transform takes any
   # tf_args_y:
 optim_parameters:
@@ -27,8 +27,9 @@ model_parameters:
     shape: [4, 5] # shape of the lattice
     pauli_qubits: null # list of lists, which describe what qubits each pauli acts on. If null edge-pairs on the lattice are used
     delta1: 0 # same as in paper, radius for including parameters in I_P
+    mode: "local"
   local_parameters:
-    width: 200 # width of "local" neural networks
+    width: 20 # width of "local" neural networks
     depth: 4 # depth of "local" neural networks
     act_fun: "tanh" # currently "tanh" or "relu"
     dropout: 0
