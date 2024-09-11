@@ -6,8 +6,6 @@ import os
 import itertools
 import copy
 
-# Mostly adapted from lllewis
-
 def read_prediction_errors(filename: str) -> list:
     pat = "({:g}, {:g})"
     errors = []

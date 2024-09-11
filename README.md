@@ -1,37 +1,49 @@
-# Learning Ground States
+# Predicting ground state properties: Constant sample complexity and deep learning
 
-Comment: The files [generate_tensor_dataset.py](generate_tensor_dataset.py), [data.py](data.py), [learner.py](learner/learner.py) and [losses.py](learner/losses.py) are of most interest to check for correctness. The files [model.py](model/model.py) and [geometry.py](model/geometry.py) may be too. \
-I have not tested hyperparameter tuning yet. Furthermore, in practice, it might be viable to use more than two hidden layers in the NN. \
-Other fine-tuning methods such as layernorm and MCDropout may also be viable to test.
-It will certainly be interesting to compare the regression model to the NN in a higher data-regime and with larger $\delta_0$
 ## Setup
 Run the following commands:
 1. `python -m pip install - r requirements.txt`
 2. `python generate_tensor_dataset.py`
 
-## Implemented so far 
+The second command will populate the folder [data_torch](data_torch) with the datasets in the appropriate formate.
+## Deep learning-based model
+
+### Training
+In order to train your deep learning-based model, run the following command:
+
+`python -u train.py --config-name=config.yaml --config-path=conf`
+
+The hyperparameters are specified via the config file [config.yaml](conf/config.yaml), where each parameter is documented in its comments. Adapt it following the same format or create your own config file and adapt the command accordingly. 
+
+You may also try to use automated hyperparameter tuning via the file [hp_tuning.py](learner/hp_tuning.py). This feature is however experimantal and may not work yet.
+
+### Evaluation
+
+Run the following command: 
+`python -u evaluate.py --config-name=config.yaml --config-path=conf`
+
+This will evaluate metrics of interest, such as training and test error and magnitude of certain weights.
+Please make sure to use the same config filename and path as for training.
+
+## Regression-based model
+The code is a slightly adapted version of the code by Lewis et al. 2023. In particular, we added a jax backend to the regression solver.
+In order to train and evaluate the regression model, run the following command:
+`python -u train_regression.py`
+
+In order to specify hyperparameters, have a look at [train_regression.py](train_regression.py) and either use the flags of your choise or change the default options in the file.
+
+## Plots
+
+More general functionality for generating plots from the evaluation data will be added soon. In the mean time, we refer to [plot_results.py](plot_results.py) and [plot_results2.py](plot_results2.py) as an example. 
+
+## Other files
 
 The ($d$-dimensional) lattice model and the corresponding functionality to generate $I_P$ can be found in [geometry.py](model/geometry.py). The complete neural network is in [model.py](model/model.py). 
 
-Usage: Enter hyperparameters for training in [config.yaml](conf/config.yaml). \
-Then, run `python train.py`.
+## Custom Heisenberg data generation
+The main script for data generation is [generate_heisenberg_data.jl](data_generation/generate_heisenberg_data.jl), which is an adapted version from Huang et al. Our adapted version makes use of the new [CUDA version](https://itensor.org/news/23_10_23_gpu.html), by adding `using CUDA`to the script, which is from Oct 2023. Run the following command:
+`julia generate_heisenberg_data.jl`
+Make sure to navigate to the respective folder. See the file for flags specifying hyperparameters.
 
-## Things left to do
-
-### Hyperparameter tuning
-Next step: Integrate hyperparameter tuning as has been done in [this blogpost](https://medium.com/@crcrpar/optuna-fastai-tabular-model-001-55777031e288). \
-This [package](https://pytorch.org/tutorials/beginner/hyperparameter_tuning_tutorial.html) seems however more suited for later, since allows for parallelization accross one sinlge GPU. This will come in handy when running a job on a medium sized compute node.
-
-### Netket Heisenberg model
-Implemented our model using the [Netket library](https://netket.readthedocs.io/en/latest/). Exact Lanczos ground state computation gets killed locally due to too much memory usage from $5 \times 5$ grid onwards. Can potentially use other approximate ground state methods they provide.
-
-## Possible resources for data generation
-### iTensor
-The approach in [generate_heisenberg_data.jl](data_generation/generate_heisenberg_data.jl) seems to have attempted to use GPUs, but the corresponding parts are commented. 
-Suggestion: Learn the basics of Julia, tune the script a bit using [Performance tips](https://docs.julialang.org/en/v1/manual/performance-tips/). Use the new [CUDA version](https://itensor.org/news/23_10_23_gpu.html), by adding `using CUDA`to the script, which is from Oct 2023. 
-### Pennylane
-The paper `provably efficient machine learning for quantum many-body problems´ has been implemented using [Pennylane](https://pennylane.ai/qml/demos/tutorial_ml_classical_shadows/). But it looks like they are missing an efficient method to compute the ground state (e.g. DMRG, as in Robert's version), which also caused the Netket version to be slow (and memory-inefficient). But it looks like pennylane can also do [DMRG states](https://pennylane.ai/qml/demos/tutorial_initial_state_preparation/), which is what I currently consider most promising. But there does not seem to be a GPU implementation. 
-### cuDMRG
-There is a [GPU-based DMRG implementation](https://github.com/ClarkResearchGroup/cuDMRG/tree/master) based on [CuPy](https://cupy.dev). We might manage to get an implementation by altering the file [heisenberg.py](https://github.com/ClarkResearchGroup/cuDMRG/blob/master/cuDMRG/apps/heisenberg.py). They also mention that `Hopefully more sparse solvers can be added in the future´, which might indicate that this is not optimal with respect to state of the art.
-### DMRG Material
-Among an [introductory paper](https://web.mit.edu/8.334/www/grades/projects/projects14/Yu-An%20Chen+Hung-I%20Yang.pdf), I came across a paper where they claim to have done a [JAX implementation of DMRG](https://arxiv.org/pdf/2204.05693.pdf), which is incredibly fast on strong TPUs. However, I could not find the code yet. This here is the [original DMRG paper](https://journals.aps.org/prl/pdf/10.1103/PhysRevLett.69.2863), and here a longer, [comprehensive introduction](https://arxiv.org/pdf/1008.3477.pdf) connecting DMRG and matrix product states.
+### DMRG Literature
+Among an [introductory paper](https://web.mit.edu/8.334/www/grades/projects/projects14/Yu-An%20Chen+Hung-I%20Yang.pdf), there a paper where they claim to have done a [JAX implementation of DMRG](https://arxiv.org/pdf/2204.05693.pdf) tailored to TPUs. This here is the [original DMRG paper](https://journals.aps.org/prl/pdf/10.1103/PhysRevLett.69.2863), and here a longer, [comprehensive introduction](https://arxiv.org/pdf/1008.3477.pdf) connecting DMRG and matrix product states.

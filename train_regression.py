@@ -22,7 +22,10 @@ from tensordict import TensorDict
 import jax
 from jax import numpy as jnp
 import time
-#jax.config.update("jax_enable_x64", True)
+
+# do something like if "gpu, else..."
+jax.config.update("jax_enable_x64", True)
+jax.config.update('jax_platform_name', 'cpu')
 
 
 def parse_args(return_parser=False, default_algo='new'):
